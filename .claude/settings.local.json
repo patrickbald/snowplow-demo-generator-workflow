@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Gmail__gmail_search_messages",
+      "mcp__claude_ai_Slack__slack_search_public_and_private",
+      "WebFetch(domain:docs.snowplow.io)",
+      "Bash(source .venv/bin/activate*)",
+      "Bash(cd /Users/patrickbald/patrick/dev-env-workflow*)",
+      "Bash(mkdir -p*)",
+      "Bash(cp .claude/agents/site-templates/*)",
+      "Bash(sed*)",
+      "Bash(npm*)",
+      "Bash(docker*)",
+      "Bash(curl*)",
+      "Bash(lsof*)",
+      "Bash(kill*)",
+      "Bash(snowplow-cli*)",
+      "Bash(dbt*)",
+      "Bash(python*)",
+      "Bash(python3*)",
+      "Bash(grep*)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(rm*)",
+      "Bash(sleep*)",
+      "Bash(open*)",
+      "Bash(nohup*)",
+      "Bash(wait*)",
+      "Bash(tail*)",
+      "Bash(echo*)",
+      "Bash(rm -f demo-gen/output/context.json demo-gen/output/schemas-ready.json demo-gen/output/site-manifest.json)",
+      "Bash(rm -rf demo-gen/output/schemas/ demo-gen/output/demo-web/ demo-gen/output/dbt-project/ demo-gen/output/existing-schemas/)"
+    ]
+  }
+}

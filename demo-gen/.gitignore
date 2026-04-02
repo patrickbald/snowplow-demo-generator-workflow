@@ -1,0 +1,11 @@
+.venv/
+.env
+config.env
+output/context.json
+output/schemas-ready.json
+output/schemas/*.yml
+output/demo-site/
+output/demo-web/
+output/dbt-project/
+__pycache__/
+*.pyc

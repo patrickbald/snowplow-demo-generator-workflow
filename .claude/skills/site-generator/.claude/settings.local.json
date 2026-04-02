@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/duncanevans/Snowplow/Utilities/skills/demo-creator/references && mv consent-management.md baseline-consent-management.md && mv utm-generation.md baseline-utm-generation.md && mv signals-toggle.md baseline-signals-toggle.md && mv video-tracking.md baseline-video-tracking.md && mv cross-domain-linking.md baseline-cross-domain-linking.md && mv user-accounts.md baseline-user-accounts.md)"
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+apiVersion: v1
+resourceType: data-structure
+meta:
+  hidden: false
+  schemaType: event
+  customData: {}
+data:
+  $schema: 'http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#'
+  description: 'Agent logs when user requirements cannot be met. Agent context provides invocation and state details.'
+  self:
+    vendor: com.snowplow.demo
+    name: constraint_violation
+    format: jsonschema
+    version: 1-0-0
+  type: object
+  properties:
+    invocation_id:
+      type: string
+      description: 'Parent invocation identifier'
+      maxLength: 36
+    violation_id:
+      type: string
+      description: 'Unique identifier for this violation'
+      maxLength: 36
+    constraint_type:
+      type: string
+      enum:
+        - budget
+        - dates
+        - availability
+        - route
+        - preferences
+        - other
+      description: 'Type of constraint that was violated'
+    user_requirement:
+      type: string
+      description: 'What the user requested'
+      maxLength: 500
+    reason_not_met:
+      type: string
+      description: 'Why requirement cannot be fulfilled'
+      maxLength: 1000
+    alternatives_considered:
+      type:
+        - array
+        - 'null'
+      items:
+        type: string
+        description: 'Alternative option'
+        maxLength: 500
+      description: 'Alternative options agent considered'
+    recommendation:
+      type:
+        - string
+        - 'null'
+      description: 'Agent recommended alternative'
+      maxLength: 1000
+    violated_at:
+      type: string
+      format: date-time
+      description: 'Timestamp when violation was detected'
+  required:
+    - invocation_id
+    - violation_id
+    - constraint_type
+    - user_requirement
+    - reason_not_met
+    - violated_at
+  additionalProperties: false
+

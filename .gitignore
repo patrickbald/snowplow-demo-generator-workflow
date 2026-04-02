@@ -1,0 +1,25 @@
+# Personal credentials — never commit
+demo-gen/.env
+demo-gen/config.env
+
+# Generated output — rebuilt on each run
+demo-gen/output/context.json
+demo-gen/output/schemas-ready.json
+demo-gen/output/site-manifest.json
+demo-gen/output/schemas/
+demo-gen/output/demo-web/
+demo-gen/output/dbt-project/
+demo-gen/output/existing-schemas/
+
+# Python
+demo-gen/.venv/
+demo-gen/__pycache__/
+demo-gen/**/__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/

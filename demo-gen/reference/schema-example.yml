@@ -1,0 +1,33 @@
+schema: iglu:com.acme/product_viewed/jsonschema/1-0-0
+self:
+  vendor: com.acme
+  name: product_viewed
+  format: jsonschema
+  version: 1-0-0
+data:
+  type: object
+  properties:
+    product_id:
+      type: string
+      description: Unique identifier for the product
+    product_name:
+      type: string
+      description: Display name of the product
+    category:
+      type: string
+      description: Product category
+    price:
+      type: number
+      description: Product price in the account currency
+    currency:
+      type: string
+      description: ISO 4217 currency code
+      maxLength: 3
+    position_in_list:
+      type: integer
+      description: Position of the product in the listing (1-indexed)
+  required:
+    - product_id
+    - product_name
+    - category
+  additionalProperties: false

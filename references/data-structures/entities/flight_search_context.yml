@@ -1,0 +1,91 @@
+apiVersion: v1
+resourceType: data-structure
+meta:
+  hidden: false
+  schemaType: entity
+  customData: {}
+data:
+  $schema: 'http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#'
+  description: 'Context entity for flight search operations, containing search criteria and results metadata.'
+  self:
+    vendor: com.snowplow.demo
+    name: flight_search_context
+    format: jsonschema
+    version: 1-0-0
+  type: object
+  properties:
+    origin:
+      type: string
+      description: 'Origin city or airport code'
+      maxLength: 100
+    destination:
+      type: string
+      description: 'Destination city or airport code'
+      maxLength: 100
+    departure_date:
+      type: string
+      format: date
+      description: 'Departure date'
+    return_date:
+      type:
+        - string
+        - 'null'
+      format: date
+      description: 'Return date for round trip'
+    passengers:
+      type: integer
+      description: 'Number of passengers'
+      minimum: 1
+      maximum: 20
+    cabin_class:
+      type: string
+      enum:
+        - economy
+        - premium_economy
+        - business
+        - first
+      description: 'Cabin class for search'
+    sort_by:
+      type:
+        - string
+        - 'null'
+      enum:
+        - price
+        - duration
+        - departure_time
+        - arrival_time
+        - null
+      description: 'Sort criteria for results'
+    results_count:
+      type: integer
+      description: 'Number of results found'
+      minimum: 0
+      maximum: 1000
+    price_range_min:
+      type:
+        - number
+        - 'null'
+      description: 'Minimum price in results'
+      minimum: 0
+      maximum: 1000000
+    price_range_max:
+      type:
+        - number
+        - 'null'
+      description: 'Maximum price in results'
+      minimum: 0
+      maximum: 1000000
+    currency:
+      type: string
+      description: 'Currency code for prices'
+      maxLength: 3
+  required:
+    - origin
+    - destination
+    - departure_date
+    - passengers
+    - cabin_class
+    - results_count
+    - currency
+  additionalProperties: false
+

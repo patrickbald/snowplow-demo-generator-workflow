@@ -1,0 +1,55 @@
+apiVersion: v1
+resourceType: data-structure
+meta:
+  hidden: false
+  schemaType: event
+  customData: {}
+data:
+  $schema: 'http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#'
+  description: 'Agent logs a significant decision-making step. Agent context provides invocation and state details.'
+  self:
+    vendor: com.snowplow.demo
+    name: agent_decision_logged
+    format: jsonschema
+    version: 1-0-0
+  type: object
+  properties:
+    invocation_id:
+      type: string
+      description: 'Parent invocation identifier'
+      maxLength: 36
+    decision_id:
+      type: string
+      description: 'Unique identifier for this decision'
+      maxLength: 36
+    decision_type:
+      type: string
+      enum:
+        - tool_selection
+        - parameter_reasoning
+        - result_interpretation
+        - clarification_needed
+        - constraint_handling
+      description: 'Type of decision being made'
+    reasoning:
+      type: string
+      description: 'Natural language explanation of decision'
+      maxLength: 2000
+    context:
+      type:
+        - object
+        - 'null'
+      description: 'Additional context for the decision'
+      additionalProperties: true
+    logged_at:
+      type: string
+      format: date-time
+      description: 'Timestamp when decision was logged'
+  required:
+    - invocation_id
+    - decision_id
+    - decision_type
+    - reasoning
+    - logged_at
+  additionalProperties: false
+
