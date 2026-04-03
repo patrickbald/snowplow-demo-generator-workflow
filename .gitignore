@@ -17,6 +17,10 @@ demo-gen/__pycache__/
 demo-gen/**/__pycache__/
 *.pyc
 
+# Internal docs
+docs/
+Project Overview.md
+
 # macOS
 .DS_Store
 
