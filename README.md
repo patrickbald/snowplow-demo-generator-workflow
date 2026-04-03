@@ -1,6 +1,6 @@
-# SA Demo Environment Generator
+# Demo Environment Generator
 
-A sales engineering workflow — building a custom Snowplow demo environment for a prospect — delegated almost entirely to AI. Invoke `/demo-workflow` in Claude Code, confirm a research summary, interact with the generated site for a few minutes, then say "done." Everything else runs automatically.
+Building a custom Snowplow demo environment for a prospect natively with Claude CodeInvoke `/demo-workflow` in Claude Code, confirm a research summary, interact with the generated site for a few minutes, then say "done." Everything else runs automatically.
 
 ---
 
