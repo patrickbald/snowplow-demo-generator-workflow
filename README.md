@@ -1,6 +1,6 @@
 # SA Demo Environment Generator
 
-A demonstration of delegating a repeatable sales-engineering workflow to AI. Invoke `/demo-workflow` in Claude Code, give it a company name, and it researches the prospect automatically — searching Gmail, Slack, and Gong call transcripts — before kicking off three Claude Code sub-agents that build the environment end-to-end.
+A sales engineering workflow — building a custom Snowplow demo environment for a prospect — delegated almost entirely to AI. Invoke `/demo-workflow` in Claude Code, confirm a research summary, interact with the generated site for a few minutes, then say "done." Everything else runs automatically.
 
 ---
 
@@ -18,7 +18,7 @@ A demonstration of delegating a repeatable sales-engineering workflow to AI. Inv
 site-agent  (.claude/agents/site-agent.md)
        │  starts Snowplow Micro in background
        │  scaffolds Next.js site at output/demo-web/
-       │  baseline tracking only (page views, link clicks, consent, UTM, video, Signals)
+       │  baseline tracking: page views, link clicks, consent, UTM, video, Signals
        │  leaves TODO comments for custom event injection
        │  writes output/site-manifest.json  (pages + interactions handoff)
        │
@@ -26,7 +26,7 @@ site-agent  (.claude/agents/site-agent.md)
 events-agent  (.claude/agents/events-agent.md)
        │  reads site source + site-manifest.json
        │  designs 3–5 custom event schemas grounded in real site interactions
-       │  validates + publishes schemas to BDP Console
+       │  validates + publishes schemas to BDP Console (vendor/prefix from config.env)
        │  injects tracking calls into site source files
        │  runs autonomous Micro verification loop until /micro/bad is empty
        │  writes output/schemas-ready.json
@@ -38,122 +38,122 @@ data-agent  (.claude/agents/data-agent.md)
        │  fetches events from Micro /good
        │  amplifies across 9 simulated sessions (9 days of data)
        │  loads into Snowflake: <DATABASE>.<SCHEMA>.events
-       │  writes + runs dbt project (snowplow_unified package)
+       │  runs dbt seed + dbt run (snowplow_unified package)
        │  surfaces: views, sessions, users tables
 ```
 
 ---
 
+## New team member setup
+
+Run the interactive onboarding wizard — it checks what's already installed, walks through each missing piece, and verifies everything works before you're done:
+
+```
+/onboarding
+```
+
+This covers: prerequisites, Python venv, `.env` and `config.env` configuration, Snowflake connection, snowplow-cli authentication, MCP connections (Gmail + Slack), and Docker image pull.
+
+**If you prefer to set up manually**, see the sections below.
+
+---
+
 ## Prerequisites
 
-### 1. Claude Code + MCP connections
+| Tool | Minimum version | Install |
+|---|---|---|
+| Claude Code | latest | `npm install -g @anthropic-ai/claude-code` |
+| Node.js + npm | Node 18+ | `brew install node` |
+| Docker Desktop | any | docker.com |
+| snowplow-cli | any | `brew install snowplow/taps/snowplow-cli` |
+| Python | 3.10+ | `brew install python3` |
 
-The skill runs inside Claude Code. The research step requires:
-- **Gmail MCP** — for searching prospect email threads
-- **Slack MCP** — for searching internal account discussions
+**MCP connections** (configured in Claude Code, not this repo):
+- Gmail MCP — for prospect research
+- Slack MCP — for internal account discussions
 
-Gong transcript lookup uses your Snowflake credentials directly (queries `GONG_SHARE_DB`). If your role doesn't have access, this step is skipped silently.
+---
 
-### 2. Python venv (for Snowflake tooling only)
+## Configuration
+
+The project uses two credential files, both gitignored:
+
+### `demo-gen/.env` — personal credentials
+
+Copy from `.env.example` and fill in:
+
+| Variable | Where to find it |
+|---|---|
+| `SNOWFLAKE_ACCOUNT` | Snowflake UI → account menu → Copy account identifier |
+| `SNOWFLAKE_USER` | Your Snowflake username |
+| `SNOWFLAKE_TOKEN` | Snowflake UI → My Profile → Programmatic Access Tokens (preferred over password) |
+| `SNOWFLAKE_PASSWORD` | Your Snowflake password (fallback if no token) |
+| `SNOWPLOW_IGLU_API_KEY` | BDP Console → Settings → API Keys → Iglu write key |
+| `REPO_ROOT` | Absolute path to this repo on your machine |
+
+### `demo-gen/config.env` — shared project settings
+
+Copy from `config.env.example` and fill in:
+
+| Variable | Notes |
+|---|---|
+| `SNOWFLAKE_DATABASE` | e.g. `ANALYTICS_DEV_DB` |
+| `SNOWFLAKE_WAREHOUSE` | e.g. `ANALYTICS_DEV_WH` |
+| `SNOWFLAKE_SCHEMA` | Use your name to avoid conflicts, e.g. `jsmith_dbt_demo` |
+| `SNOWFLAKE_ROLE` | e.g. `ANALYTICS_DEV_ROLE` |
+| `SNOWPLOW_IGLU_REGISTRY_URL` | BDP Console → Settings → Iglu Registry URL |
+| `SCHEMA_VENDOR` | Vendor for published schemas, e.g. `com.snowplow.jsmith` |
+| `SCHEMA_PREFIX` | Prefix for schema names, e.g. `jsmith_test_` |
+
+### Python venv
 
 ```bash
 cd demo-gen
 python3 -m venv .venv
 source .venv/bin/activate
-pip install python-dotenv snowflake-connector-python dbt-snowflake
+pip install -r requirements.txt
 ```
 
-The venv is only needed for Snowflake loading and dbt. The site build and schema work run natively via Claude Code.
-
-### 3. Node.js 18+ and npm
+### snowplow-cli authentication
 
 ```bash
-node --version   # 18+
-npm --version
-```
-
-### 4. snowplow-cli
-
-```bash
-brew install snowplow/taps/snowplow-cli
+snowplow-cli configure   # paste in your BDP Console API key and org ID when prompted
 snowplow-cli data-structures list   # confirm it works
 ```
 
-Credentials are read from `.env` automatically.
+---
 
-### 5. Docker
+## Running a demo
 
-```bash
-docker pull snowplow/snowplow-micro:4.1.1
-docker ps   # must return without error
+### Before each demo
+
+```
+/pre-demo-check
 ```
 
----
+Verifies Snowflake, Docker, Micro, snowplow-cli, Node, dbt, Gmail MCP, and Slack MCP are all working. Catches issues before you're live with a prospect.
 
-## Credentials
-
-Edit `demo-gen/.env` before running:
-
-**Snowplow:**
-
-| Variable | Where to find it |
-|---|---|
-| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys |
-| `SNOWPLOW_CONSOLE_ORG_ID` | BDP Console → Settings → Organisation |
-| `SNOWPLOW_CONSOLE_API_KEY_ID` | BDP Console → Settings → API Keys |
-| `SNOWPLOW_CONSOLE_API_KEY` | BDP Console → Settings → API Keys |
-| `SNOWPLOW_IGLU_API_KEY` | BDP Console → Settings → API Keys → Iglu |
-| `SNOWPLOW_IGLU_REGISTRY_URL` | BDP Console → Settings → Iglu Registry URL |
-
-**Snowflake:**
-
-| Variable | Notes |
-|---|---|
-| `SNOWFLAKE_ACCOUNT` | e.g. `xy12345.us-east-1` |
-| `SNOWFLAKE_USER` | Snowflake username |
-| `SNOWFLAKE_PASSWORD` | Snowflake password |
-| `SNOWFLAKE_DATABASE` | Database where events will be loaded |
-| `SNOWFLAKE_WAREHOUSE` | Compute warehouse |
-| `SNOWFLAKE_SCHEMA` | Schema for raw events (derived tables land in `<SCHEMA>_derived`) |
-| `SNOWFLAKE_ROLE` | Role with CREATE SCHEMA + CREATE TABLE + INSERT on the target database |
-
----
-
-## Running
-
-### Primary flow
+### Run the workflow
 
 ```
 /demo-workflow
 ```
 
-Claude asks for the company name, researches the prospect, confirms with you, then runs all three sub-agents automatically. You only need to interact with the demo site when prompted, then say "done".
+Claude asks for the company name, researches the prospect automatically, confirms findings with you, then runs all three sub-agents. You interact with the demo site when prompted, then say "done" — data modeling runs automatically.
 
-### Manual handoff
+### Manual context handoff
 
-To provide context not in email/Slack (e.g., notes from an in-person meeting), paste it into `reference/sales-handoff.md` before invoking the skill. Claude checks this file first and merges it with automated research.
+To provide context not in email/Slack (e.g. notes from an in-person meeting), paste it into `demo-gen/reference/sales-handoff.md` before invoking the skill. Claude checks this file first and merges it with automated research.
 
-### Clearing output
+---
 
-To reset all generated output and stop running services:
+## After each demo — cleanup
 
-```bash
-# Stop Micro
-docker ps --filter publish=9090 -q | xargs docker stop 2>/dev/null
-
-# Kill Next.js dev server
-lsof -ti:3000 | xargs kill -9 2>/dev/null
-
-# Remove generated files
-rm -rf demo-gen/output/context.json \
-       demo-gen/output/schemas-ready.json \
-       demo-gen/output/site-manifest.json \
-       demo-gen/output/schemas/ \
-       demo-gen/output/demo-web/ \
-       demo-gen/output/dbt-project/
+```
+/clean-demo
 ```
 
-This does not affect data structures in BDP Console or data in Snowflake.
+Stops Snowplow Micro and the Next.js dev server, removes all generated output files, and optionally drops Snowflake data. Also reminds you to delete published schemas from BDP Console dev before the next run.
 
 ---
 
@@ -163,15 +163,26 @@ This does not affect data structures in BDP Console or data in Snowflake.
 |---|---|
 | `output/context.json` | Prospect context — vertical, use cases, page structure |
 | `output/site-manifest.json` | Site interactions map (site-agent → events-agent handoff) |
-| `output/schemas/<name>.yml` | Published custom event schemas |
+| `output/schemas/<prefix><name>.yml` | Published custom event schemas |
 | `output/schemas-ready.json` | Schema manifest with full property details |
 | `output/demo-web/` | Generated Next.js demo site |
 | `output/dbt-project/` | Configured dbt project |
 | `<DATABASE>.<SCHEMA>.events` | Raw events in Snowflake |
-| `<DATABASE>.<SCHEMA>_derived.*` | Modeled output tables |
+| `<DATABASE>.<SCHEMA>_derived.*` | Modeled output (views, sessions, users) |
 
 **Demo site:** `http://localhost:3000`
 **Micro event stream:** `http://localhost:9090/micro/good`
+
+---
+
+## Skills reference
+
+| Skill | When to use |
+|---|---|
+| `/onboarding` | First-time setup on a new machine |
+| `/pre-demo-check` | Before every demo to verify connections |
+| `/demo-workflow` | Run the full pipeline for a prospect |
+| `/clean-demo` | Reset environment after a demo |
 
 ---
 
@@ -183,15 +194,15 @@ This does not affect data structures in BDP Console or data in Snowflake.
 | Gmail/Slack search returns nothing | Confirm MCP connections are active in your Claude Code session |
 | Gong transcripts not found | Confirm your Snowflake role has access to `GONG_SHARE_DB`; skipped silently if not |
 | Docker not running | Start Docker Desktop, then retry |
-| Port 9090 already in use | site-agent stops the existing container automatically |
-| Port 3000 already in use | site-agent kills the process automatically |
+| Snowflake MFA prompt blocking data-agent | Use a Programmatic Access Token (`SNOWFLAKE_TOKEN`) instead of password |
 | Schema validation fails | events-agent self-corrects up to 2 times per schema |
+| Schema publish fails — name conflict | Delete existing `<SCHEMA_PREFIX>*` schemas from BDP Console dev before re-running |
 | Micro not validating custom schemas | Check `SNOWPLOW_IGLU_API_KEY` and `SNOWPLOW_IGLU_REGISTRY_URL` in `.env` |
 | `npm install` fails | Check Node.js version (18+ required) |
 | Demo site blank/broken | Check `/tmp/demo-dev.log` for Next.js errors |
 | "No events found in Micro" | Open `http://localhost:3000`, interact with the site, then say "done" |
-| dbt run fails — schema not found | Check `SNOWFLAKE_DATABASE` in `.env` and that the role has CREATE SCHEMA permissions |
-| dbt run fails — auth error | Check all Snowflake credentials in `.env` |
+| dbt run fails — schema not found | Check `SNOWFLAKE_DATABASE` and `SNOWFLAKE_SCHEMA` in config files |
+| dbt schema has `_derived_derived` suffix | Set dbt target schema to `SNOWFLAKE_SCHEMA` only — the package appends its own suffixes |
 
 ---
 
@@ -205,24 +216,21 @@ demo-gen/
 │   ├── schema-example.yml   # Canonical schema format (read by events-agent)
 │   └── sales-handoff.md     # Paste deal notes here before running the skill
 ├── output/                  # Generated files (created at runtime, gitignored)
-└── .env                     # API keys and credentials
+├── .env                     # Personal credentials (gitignored — copy from .env.example)
+├── .env.example             # Template for .env
+├── config.env               # Shared project settings (gitignored — copy from config.env.example)
+├── config.env.example       # Template for config.env
+└── requirements.txt         # Python dependencies
 
 .claude/
 ├── agents/
 │   ├── site-agent.md        # Builds Next.js site + starts Micro
 │   ├── events-agent.md      # Schema generation, injection, Micro verification
-│   └── data-agent.md        # Snowflake loading + dbt modeling
+│   ├── data-agent.md        # Snowflake loading + dbt modeling
+│   └── site-templates/      # Pre-built TypeScript files stamped by site-agent
 └── skills/
-    └── demo-workflow/
-        └── SKILL.md         # /demo-workflow skill — orchestrates the full pipeline
-
-.claude/agents/site-templates/     # Pre-built TypeScript files copied by site-agent
-    ├── package.json              # with {{APP_ID}} / {{BRAND_NAME}} placeholders
-    ├── src/lib/snowplow-config.ts
-    ├── src/components/           # footer, header, login-modal, consent-manager, etc.
-    └── app/video/page.tsx
-
-.claude/skills/site-generator/
-    ├── SKILL.md             # Standalone site-generator skill (non-demo use)
-    └── references/          # Baseline feature reference docs
+    ├── demo-workflow/        # /demo-workflow — orchestrates the full pipeline
+    ├── clean-demo/           # /clean-demo — resets environment between demos
+    ├── pre-demo-check/       # /pre-demo-check — verifies all connections before going live
+    └── onboarding/           # /onboarding — interactive setup wizard for new team members
 ```
