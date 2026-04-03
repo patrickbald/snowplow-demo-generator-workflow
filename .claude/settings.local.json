@@ -29,7 +29,10 @@
       "Bash(tail*)",
       "Bash(echo*)",
       "Bash(rm -f demo-gen/output/context.json demo-gen/output/schemas-ready.json demo-gen/output/site-manifest.json)",
-      "Bash(rm -rf demo-gen/output/schemas/ demo-gen/output/demo-web/ demo-gen/output/dbt-project/ demo-gen/output/existing-schemas/)"
+      "Bash(rm -rf demo-gen/output/schemas/ demo-gen/output/demo-web/ demo-gen/output/dbt-project/ demo-gen/output/existing-schemas/)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
