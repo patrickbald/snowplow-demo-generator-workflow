@@ -5,7 +5,7 @@
       "mcp__claude_ai_Slack__slack_search_public_and_private",
       "WebFetch(domain:docs.snowplow.io)",
       "Bash(source .venv/bin/activate*)",
-      "Bash(cd /Users/patrickbald/patrick/dev-env-workflow*)",
+      "Bash(cd demo-gen*)",
       "Bash(mkdir -p*)",
       "Bash(cp .claude/agents/site-templates/*)",
       "Bash(sed*)",

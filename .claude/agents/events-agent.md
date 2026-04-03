@@ -50,10 +50,16 @@ real interaction you saw in the site — not generic examples.
 
 After designing, print: `[events-agent] → designed <N> schemas: <comma-separated names>`
 
+Before designing schemas, read `SCHEMA_VENDOR` and `SCHEMA_PREFIX` from `demo-gen/config.env`:
+```bash
+cd demo-gen && source config.env && echo "vendor=$SCHEMA_VENDOR prefix=$SCHEMA_PREFIX"
+```
+Use these values everywhere below in place of the literal vendor and prefix strings.
+
 Rules:
-- Schema names must be prefixed `pb_test_` (e.g. `pb_test_product_viewed`, not `product_viewed`)
+- Schema names must be prefixed with `$SCHEMA_PREFIX` (e.g. `${SCHEMA_PREFIX}product_viewed`)
 - This prefix applies to the schema name, the YAML filename, and the `iglu_uri`
-- Vendor is always `com.pbenvworkflow` — do not derive it from company_name
+- Vendor is always `$SCHEMA_VENDOR` — do not derive it from company_name
 - Version is always `1-0-0`
 - Use `data_maturity` from context.json to calibrate property count and complexity:
   - `low` → 3–4 properties, simple types (string, number, boolean)
@@ -68,10 +74,10 @@ Rules:
 
 ## STEP 4 — Write schema YAMLs
 
-Write each schema to `demo-gen/output/schemas/pb_test_<event_name>.yml`.
+Write each schema to `demo-gen/output/schemas/${SCHEMA_PREFIX}<event_name>.yml`.
 Follow the format from `demo-gen/reference/schema-example.yml` exactly.
 
-Print: `[events-agent] → wrote schema: pb_test_<event_name>.yml`
+Print: `[events-agent] → wrote schema: ${SCHEMA_PREFIX}<event_name>.yml`
 
 ---
 
@@ -81,15 +87,15 @@ Print: `[events-agent] STEP 5 — Validating schemas with snowplow-cli`
 
 Validate each schema individually:
 ```bash
-cd demo-gen && source .venv/bin/activate && snowplow-cli data-structures validate output/schemas/pb_test_<event_name>.yml
+cd demo-gen && source .venv/bin/activate && snowplow-cli data-structures validate output/schemas/${SCHEMA_PREFIX}<event_name>.yml
 ```
 
-After each schema passes, print: `[events-agent] → pb_test_<event_name> validated ✓`
+After each schema passes, print: `[events-agent] → ${SCHEMA_PREFIX}<event_name> validated ✓`
 
 If validation fails:
 1. Read the error carefully
 2. Fix the YAML
-3. Print: `[events-agent] → pb_test_<event_name> fix applied: <what was wrong>`
+3. Print: `[events-agent] → ${SCHEMA_PREFIX}<event_name> fix applied: <what was wrong>`
 4. Retry (max 2 retries per schema)
 
 Do not proceed to publish until all schemas pass validation.
@@ -172,12 +178,12 @@ Write `demo-gen/output/schemas-ready.json` as the canonical record of what was p
 ```json
 {
   "status": "published",
-  "vendor": "com.pbenvworkflow",
+  "vendor": "<SCHEMA_VENDOR>",
   "schemas": [
     {
       "name": "<event_name>",
       "version": "1-0-0",
-      "iglu_uri": "iglu:com.pbenvworkflow/<event_name>/jsonschema/1-0-0",
+      "iglu_uri": "iglu:<SCHEMA_VENDOR>/<event_name>/jsonschema/1-0-0",
       "properties": {
         "<property_name>": {
           "type": "<string|number|integer|boolean>",
@@ -206,7 +212,7 @@ After completing, print: `[events-agent] → static analysis passed — all enum
 each call against the schema YAML.
 
 For each custom schema:
-1. Read `demo-gen/output/schemas/pb_test_<event_name>.yml` — build a map of:
+1. Read `demo-gen/output/schemas/${SCHEMA_PREFIX}<event_name>.yml` — build a map of:
    - Every enum field → allowed values
    - Every typed field → expected type
 2. Find the tracking call in the site source
@@ -237,7 +243,7 @@ curl -s -X POST localhost:9090/com.snowplowanalytics.snowplow/tp2 \
 
 Where `<APP_ID>` is `company_name` lowercased with spaces → hyphens, plus `-demo` (e.g. `bumble-demo`).
 
-After firing each event, print: `[events-agent] → fired test event: pb_test_<event_name>`
+After firing each event, print: `[events-agent] → fired test event: ${SCHEMA_PREFIX}<event_name>`
 
 After firing all events, check `/micro/bad`:
 ```bash
@@ -266,8 +272,8 @@ Print:
 ```
 [events-agent] Done.
 
-Schemas published (iglu:com.pbenvworkflow):
-  pb_test_<event_name> — triggered by <description of UI interaction>
+Schemas published (iglu:<SCHEMA_VENDOR>):
+  ${SCHEMA_PREFIX}<event_name> — triggered by <description of UI interaction>
   ...
 
 Verification: all events pass Micro validation (/micro/bad is empty)

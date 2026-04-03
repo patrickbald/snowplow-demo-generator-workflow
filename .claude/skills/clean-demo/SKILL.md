@@ -73,9 +73,10 @@ Print:
 
 > Local environment reset complete.
 >
-> One manual step remaining: if you published custom schemas (`pb_test_*`) to BDP Console
-> dev during this demo, delete them before the next run to avoid name conflicts.
+> One manual step remaining: if you published custom schemas to BDP Console dev during this
+> demo, delete them before the next run to avoid name conflicts.
 >
-> BDP Console → Data Structures → filter vendor `com.pbenvworkflow` → delete `pb_test_*` schemas.
+> Read `SCHEMA_VENDOR` and `SCHEMA_PREFIX` from `demo-gen/config.env`, then:
+> BDP Console → Data Structures → filter vendor `<SCHEMA_VENDOR>` → delete `<SCHEMA_PREFIX>*` schemas.
 >
 > Ready to run `/demo-workflow` for a new prospect.
