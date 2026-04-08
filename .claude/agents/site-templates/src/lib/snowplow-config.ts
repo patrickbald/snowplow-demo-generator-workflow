@@ -61,19 +61,23 @@ function configureAnonymousTracking() {
 }
 
 function setupSignalsInterventions() {
-  addInterventionHandlers({
-    demoInterventionHandler(intervention) {
-      if (!isSignalsEnabled()) return;
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(
-          new CustomEvent("signalsIntervention", { detail: { intervention } })
-        );
-      }
-    },
-  });
-  subscribeToInterventions({
-    endpoint: "https://signals.snowplowanalytics.com",
-  });
+  try {
+    addInterventionHandlers({
+      demoInterventionHandler(intervention) {
+        if (!isSignalsEnabled()) return;
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("signalsIntervention", { detail: { intervention } })
+          );
+        }
+      },
+    });
+    subscribeToInterventions({
+      endpoint: "https://signals.snowplowanalytics.com",
+    });
+  } catch {
+    // Signals not available in this environment — fail silently
+  }
 }
 
 export function initializeSnowplowOnly() {
@@ -190,7 +194,11 @@ export function initializeYouTubeTracking(elementId: string): string {
   return sessionId;
 }
 export function stopYouTubeTracking(sessionId: string) {
-  endYouTubeTracking({ id: sessionId });
+  try {
+    endYouTubeTracking({ id: sessionId });
+  } catch {
+    // player already unmounted on navigation — fail silently
+  }
 }
 
 // ─── Custom event tracking functions ────────────────────────────────────────
