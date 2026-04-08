@@ -190,7 +190,7 @@ export function initializeYouTubeTracking(elementId: string): string {
   return sessionId;
 }
 export function stopYouTubeTracking(sessionId: string) {
-  endYouTubeTracking(sessionId);
+  endYouTubeTracking({ id: sessionId });
 }
 
 // ─── Custom event tracking functions ────────────────────────────────────────

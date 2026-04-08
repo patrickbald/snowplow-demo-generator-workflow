@@ -13,9 +13,18 @@ export default function VideoPage() {
   const trackingSessionId = useRef<string | null>(null);
 
   useEffect(() => {
-    trackingSessionId.current = initializeYouTubeTracking(PLAYER_ELEMENT_ID);
+    // Load the YouTube IFrame API script, then start tracking once it's ready
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+
+    (window as any).onYouTubeIframeAPIReady = () => {
+      trackingSessionId.current = initializeYouTubeTracking(PLAYER_ELEMENT_ID);
+    };
+
     return () => {
       if (trackingSessionId.current) stopYouTubeTracking(trackingSessionId.current);
+      delete (window as any).onYouTubeIframeAPIReady;
     };
   }, []);
 
